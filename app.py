@@ -6,7 +6,7 @@ app.secret_key = "blog and posts"
 
 @app.route('/')
 def main_page():
-    return 'Hello world!'
+    return render_template('hello.html')
 
 
 if __name__ == '__main__':
