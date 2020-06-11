@@ -14,6 +14,29 @@ CREATE TABLE IF NOT EXISTS users
     )
 ''')
 
+conn.cursor().execute('''
+CREATE TABLE IF NOT EXISTS posts
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        description TEXT,
+        article_id INTEGER,
+        file_path TEXT,
+        user_id INTEGER,
+        
+        FOREIGN KEY(user_id) REFERENCES users(id)
+        FOREIGN KEY(article_id) REFERENCES articles(id)
+    )
+''')
+
+conn.cursor().execute('''
+CREATE TABLE IF NOT EXISTS articles
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT
+    )
+''')
+
 class DB:
     def __enter__(self):
         self.conn = sqlite3.connect(DB_NAME)
