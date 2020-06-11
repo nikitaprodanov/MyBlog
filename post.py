@@ -1,4 +1,6 @@
 from database import DB
+from comment import Comment
+
 
 class Post:
 	def __init__(self, id, name, description, article, file_path, user_id):
@@ -60,4 +62,5 @@ class Post:
 		with DB() as db:
 			db.execute('DELETE FROM posts WHERE id = ?', (self.id,))
 	
-	
+	def comments(self):
+		return Comment.find_by_post(self)	

@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS posts
 ''')
 
 conn.cursor().execute('''
-CREATE TABLE IF NOT EXISTS comments
+CREATE TABLE IF NOT EXISTS comment
     (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         post_id INTEGER,

@@ -6,6 +6,7 @@ import os, shutil, string, random
 
 from database import DB
 from user import User
+from comment import Comment
 from post import Post
 from article import Article
 
@@ -76,7 +77,7 @@ def list_posts():
             directory = os.listdir(post.file_path) 
             file_path = post.file_path
             images.update({file_path : directory[0]})
-    return render_template('posts.html') #, posts = posts, images = images)
+    return render_template('posts.html', posts = posts, images = images)
 
 @app.route('/posts/<int:id>')
 def show_post(id):
@@ -87,7 +88,7 @@ def show_post(id):
     username = User.find_by_id(post.user_id)
     user = User.find_by_username(username)
     email = user.email
-    return render_template('post.html', post = post, images = images, user_id = user_id, username = username, email = email)
+    return render_template('post.html', post = post)#, images = images, user_id = user_id, username = username, email = email)
 
 @app.route('/posts/new', methods=['GET', 'POST'])
 @require_login
@@ -334,7 +335,7 @@ def new_comment():
         else:
             values = (None, post, request.form['message'], user_id, username)
             Comment(*values).create()
-        logging.info('%s with id: %s commented %s on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], request.form['message'], post.id)
+        #logging.info('%s with id: %s commented %s on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], request.form['message'], post.id)
         return redirect(url_for('show_post', id=post.id))
 
 
@@ -343,7 +344,7 @@ def new_comment():
 def del_comment(id):
     Comment.delete(id)
     post = Post.find(request.form['post_id'])
-    logging.info('%s with id: %s deleted comment on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+    #logging.info('%s with id: %s deleted comment on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
     return redirect(url_for('show_post',id = post.id))
 
 
@@ -358,6 +359,6 @@ def edit_comment(id):
     logging.info('%s with id: %s edited comment on post %s with: %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id, request.form['message'])
     return redirect(url_for('show_post',id = post.id))
 
-      
+
 if __name__ == '__main__':
     app.run(debug=True)
