@@ -5,6 +5,8 @@ from functools import wraps
 
 from database import DB
 from user import User
+from post import Post
+from article import Article
 
 app = Flask(__name__)
 app.secret_key = "blog and posts"
@@ -23,6 +25,18 @@ def main_page():
         return redirect('/posts_logged_in')
     return redirect('/posts')
 
+@app.route('/posts/user_posts')
+@require_login
+def user_posts():
+    posts = Post.find_by_user_id(session['USERNAME'])
+    username = User.find_by_id(session['USERNAME'])
+    images = {}
+    for post in posts:
+        directory = os.listdir(post.file_path) 
+        file_path = post.file_path
+        images.update({file_path : directory[0]})
+    return render_template('library.html', posts = posts, images = images, username = username)
+
 @app.route('/posts_logged_in')
 @require_login
 def posts_logged_in():
@@ -34,6 +48,21 @@ def posts_logged_in():
             file_path = post.file_path
             images.update({file_path : directory[0]})
     return render_template('posts_logged_in.html', username = User.find_by_id(session['USERNAME']), posts = posts, images = images)
+
+@app.route('/posts/search', methods=['POST'])
+def search_post():
+    if request.method == 'POST':
+        keyword = request.form['keyword']
+        with DB() as db:
+            rows = db.execute('''SELECT * FROM posts WHERE 
+            (name LIKE ? OR name LIKE ?) ''', ("%" + keyword + "%", "%" + keyword + "%",)).fetchall()
+            posts = [Post(*row) for row in rows]
+            images = {}
+            for post in posts:
+                directory = os.listdir(post.file_path) 
+                file_path = post.file_path
+                images.update({file_path : directory}) 
+            return render_template('searched_posts.html', posts = posts, images = images)
 
 @app.route('/posts')
 def list_posts():
@@ -47,6 +76,115 @@ def list_posts():
             file_path = post.file_path
             images.update({file_path : directory[0]})
     return render_template('posts.html') #, posts = posts, images = images)
+
+@app.route('/posts/<int:id>')
+def show_post(id):
+    post = Post.find(id)
+    images = os.listdir(post.file_path)
+    post.file_path = '/' + post.file_path
+    user_id = session['USERNAME']
+    username = User.find_by_id(post.user_id)
+    user = User.find_by_username(username)
+    email = user.email
+    return render_template('post.html', post = post, images = images, user_id = user_id, username = username, email = email)
+
+@app.route('/posts/new', methods=['GET', 'POST'])
+@require_login
+def new_post():
+    if request.method == 'GET':
+        return render_template('new_post.html', articles = Article.all())
+    elif request.method == 'POST':
+        letters = string.ascii_lowercase
+        direc_path = random.choice(letters)
+        direc = request.form['name']
+        images = request.files.getlist("file")
+        os.mkdir("static/images/" + direc + User.find_by_id(session['USERNAME']) + direc_path)
+        for img in images:
+            img_path = 'static/images/' + direc + User.find_by_id(session['USERNAME']) + direc_path + "/"
+            img.save(img_path + img.filename)
+        article = Article.find(request.form['article_id'])
+        values = (
+            None,
+            request.form['name'],
+            request.form['description'],
+            article,
+            img_path,
+            session['USERNAME']
+        )
+        Post(*values).create()
+
+        logging.info('%s with id: %s added new post', User.find_by_id(session['USERNAME']), session['USERNAME'])
+
+        return redirect('/')
+
+@app.route('/posts/<int:id>/delete', methods=['POST'])
+@require_login
+def delete_post(id):
+    post = Post.find(id)
+    shutil.rmtree(post.file_path)
+    with DB() as db:
+        db.execute('DELETE FROM comments WHERE post_id = ?', (post.id,))
+    post.delete()
+    logging.info('%s with id: %s deleted post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+    return redirect('/')
+
+@app.route('/posts/<int:id>/edit', methods=['GET', 'POST'])
+@require_login
+def edit_post(id):
+    post = Post.find(id)
+    if request.method == 'GET':
+        return render_template('edit_post.html', post = post, articles = Article.all())
+    elif request.method == 'POST':
+        post.name = request.form['name']
+        post.description = request.form['description']
+        post.article = Article.find(request.form['article_id'])
+        images = request.files.getlist("file")
+        shutil.rmtree(post.file_path)
+        letters = string.ascii_lowercase
+        direc_path = random.choice(letters)
+        direc = request.form['name']
+        os.mkdir("static/images/" + direc + User.find_by_id(session['USERNAME']) + direc_path)
+        for img in images:
+            img_path = 'static/images/' + direc + User.find_by_id(session['USERNAME']) + direc_path + "/"
+            img.save(img_path + img.filename)
+        post.file_path = img_path
+        post.save()
+
+        logging.info('%s with id: %s edited post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+        
+        return redirect(url_for('show_post', id = post.id))
+
+@app.route('/articles')
+def get_articles():
+    return render_template("articles.html", articles=Article.all())
+
+@app.route('/articles/new', methods=['GET', 'POST'])
+def new_article():
+    if request.method == "GET":
+        return render_template("new_article.html")
+    elif request.method == "POST":
+        article = Article(None, request.form["name"])
+        article.create()
+
+        logging.info('%s with id: %s added new categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
+        
+        return redirect("/articles")
+
+
+@app.route('/articles/<int:id>')
+def get_article(id):
+    return render_template("article.html", article=Article.find(id))
+
+
+@app.route('/articles/<int:id>/delete')
+def delete_article(id):
+    Article.find(id).delete()
+
+    logging.info('%s with id: %s deleted categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
+
+
+    return redirect("/articles")
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
