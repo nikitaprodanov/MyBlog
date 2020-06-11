@@ -113,7 +113,7 @@ def new_post():
         )
         Post(*values).create()
 
-        logging.info('%s with id: %s added new post', User.find_by_id(session['USERNAME']), session['USERNAME'])
+        #logging.info('%s with id: %s added new post', User.find_by_id(session['USERNAME']), session['USERNAME'])
 
         return redirect('/')
 
@@ -125,7 +125,7 @@ def delete_post(id):
     with DB() as db:
         db.execute('DELETE FROM comments WHERE post_id = ?', (post.id,))
     post.delete()
-    logging.info('%s with id: %s deleted post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+    #logging.info('%s with id: %s deleted post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
     return redirect('/')
 
 @app.route('/posts/<int:id>/edit', methods=['GET', 'POST'])
@@ -150,7 +150,7 @@ def edit_post(id):
         post.file_path = img_path
         post.save()
 
-        logging.info('%s with id: %s edited post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+        #logging.info('%s with id: %s edited post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
         
         return redirect(url_for('show_post', id = post.id))
 
@@ -166,7 +166,7 @@ def new_article():
         article = Article(None, request.form["name"])
         article.create()
 
-        logging.info('%s with id: %s added new categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
+        #logging.info('%s with id: %s added new categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
         
         return redirect("/articles")
 
@@ -180,7 +180,7 @@ def get_article(id):
 def delete_article(id):
     Article.find(id).delete()
 
-    logging.info('%s with id: %s deleted categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
+    #logging.info('%s with id: %s deleted categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
 
 
     return redirect("/articles")
