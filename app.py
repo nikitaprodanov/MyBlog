@@ -185,7 +185,7 @@ def delete_article(id):
 
 
     return redirect("/articles")
-
+  
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -320,8 +320,44 @@ def log_out():
 
     return redirect('/')
 
-# TODO ADD POSTS ARTICLES AND COMMENTS FUNCTIONALITY
+
+@app.route('/comments/new', methods=['GET', 'POST'])
+@require_login
+def new_comment():
+    if request.method == 'POST':
+        post = Post.find(request.form['post_id'])
+        user_id = session['USERNAME']
+        username = User.find_by_id(user_id)
+        if not request.form['message']:
+            flash('You entered empty comment!')
+            return redirect(url_for('show_post', id=post.id))
+        else:
+            values = (None, post, request.form['message'], user_id, username)
+            Comment(*values).create()
+        logging.info('%s with id: %s commented %s on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], request.form['message'], post.id)
+        return redirect(url_for('show_post', id=post.id))
 
 
+@app.route('/comments/<int:id>/delete', methods=['POST'])
+@require_login
+def del_comment(id):
+    Comment.delete(id)
+    post = Post.find(request.form['post_id'])
+    logging.info('%s with id: %s deleted comment on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+    return redirect(url_for('show_post',id = post.id))
+
+
+@app.route('/comments/<int:id>/edit', methods=['POST'])
+@require_login
+def edit_comment(id):
+    if not request.form['message']:
+        Comment.delete(id)
+    else:
+        Comment.save(request.form['message'], id)
+    post = Post.find(request.form['post_id'])
+    logging.info('%s with id: %s edited comment on post %s with: %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id, request.form['message'])
+    return redirect(url_for('show_post',id = post.id))
+
+      
 if __name__ == '__main__':
     app.run(debug=True)
