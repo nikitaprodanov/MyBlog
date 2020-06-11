@@ -30,12 +30,26 @@ CREATE TABLE IF NOT EXISTS posts
 ''')
 
 conn.cursor().execute('''
+CREATE TABLE IF NOT EXISTS comments
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER,
+        message TEXT,
+        user_id INTEGER,
+        username TEXT,
+
+        FOREIGN KEY(post_id) REFERENCES posts(id)
+    )    
+''')
+
+conn.cursor().execute('''
 CREATE TABLE IF NOT EXISTS articles
     (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT
     )
 ''')
+conn.commit()
 
 class DB:
     def __enter__(self):
