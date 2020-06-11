@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>posts</title>
+</head>
+<body>
+    <div class="header">
+        <div class="user-profile">
+            {% if username %}
+                <p>Logged in as: <a href="/user_info">{{ username }}</a></p>
+            {% endif %}
+            <h1>Vehicles</h1>
+        </div>
+        <div class="topnav">
+            <a href="/posts/new">Add post</a>
+            <a href="/posts/user_posts">My posts</a>
+            <a href="/articles">articles</a>
+            <div class="search-container">
+                <form action="/posts/search" method="POST">
+                    <input type="search" name="keyword" placeholder="Search...">
+                    <input type="submit" value="Search">
+                
+                </form>
+            </div>
+        </div> 
+    </div>
+</body>
+</html>
