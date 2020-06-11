@@ -26,26 +26,26 @@ def main_page():
 @app.route('/posts_logged_in')
 @require_login
 def posts_logged_in():
-    # posts = Post.all()
-    # images = {}
-    # if posts:
-    #     for post in posts:
-    #         directory = os.listdir(post.file_path) 
-    #         file_path = post.file_path
-    #         images.update({file_path : directory[0]})
-    return render_template('posts_logged_in.html', username = User.find_by_id(session['USERNAME'])) #''', posts = posts, images = images''')
+    posts = Post.all()
+    images = {}
+    if posts:
+       for post in posts:
+            directory = os.listdir(post.file_path) 
+            file_path = post.file_path
+            images.update({file_path : directory[0]})
+    return render_template('posts_logged_in.html', username = User.find_by_id(session['USERNAME']), posts = posts, images = images)
 
 @app.route('/posts')
 def list_posts():
     if session.get('logged_in'):
         return redirect('/posts_logged_in')
-    # posts = Post.all()
-    # images = {}
-    # if posts:
-    #     for post in posts:
-    #         directory = os.listdir(post.file_path) 
-    #         file_path = post.file_path
-    #         images.update({file_path : directory[0]})
+    posts = Post.all()
+    images = {}
+    if posts:
+        for post in posts:
+            directory = os.listdir(post.file_path) 
+            file_path = post.file_path
+            images.update({file_path : directory[0]})
     return render_template('posts.html') #, posts = posts, images = images)
 
 @app.route('/register', methods=['GET', 'POST'])
