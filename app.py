@@ -2,10 +2,7 @@ from functools import wraps
 
 from flask import Flask
 from flask import render_template, request, redirect, url_for, jsonify, send_from_directory, flash, session
-from werkzeug import secure_filename
-import json
 import os, shutil, string, random
-import logging
 
 from database import DB
 from user import User
@@ -14,11 +11,7 @@ from post import Post
 from article import Article
 
 app = Flask(__name__)
-app.secret_key = "vehicle catalogue key"
-app.logger.disabled = True
-log = logging.getLogger('werkzeug')
-log.disabled = True
-logging.basicConfig(filename= 'InfoBlog.log', level= logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+app.secret_key = "blog and posts"
 
 def require_login(func):
     @wraps(func)
@@ -130,7 +123,7 @@ def new_post():
         )
         Post(*values).create()
 
-        logging.info('%s with id: %s added new post', User.find_by_id(session['USERNAME']), session['USERNAME'])
+        #logging.info('%s with id: %s added new post', User.find_by_id(session['USERNAME']), session['USERNAME'])
 
         return redirect('/')
 
@@ -142,7 +135,7 @@ def delete_post(id):
     with DB() as db:
         db.execute('DELETE FROM comments WHERE post_id = ?', (post.id,))
     post.delete()
-    logging.info('%s with id: %s deleted post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+    #logging.info('%s with id: %s deleted post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
     return redirect('/')
 
 @app.route('/posts/<int:id>/edit', methods=['GET', 'POST'])
@@ -167,7 +160,7 @@ def edit_post(id):
         post.file_path = img_path
         post.save()
 
-        logging.info('%s with id: %s edited post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+        #logging.info('%s with id: %s edited post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
         
         return redirect(url_for('show_post', id = post.id))
 
@@ -185,7 +178,7 @@ def new_article():
         article = Article(None, request.form["name"])
         article.create()
 
-        logging.info('%s with id: %s added new categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
+        #logging.info('%s with id: %s added new categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
         
         return redirect("/articles")
 
@@ -199,7 +192,7 @@ def get_article(id):
 def delete_article(id):
     Article.find(id).delete()
 
-    logging.info('%s with id: %s deleted categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
+   #logging.info('%s with id: %s deleted categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
 
 
     return redirect("/articles")
@@ -220,7 +213,7 @@ def new_comment():
             values = (None, post, request.form['message'], user_id, username)
             Comment(*values).create()
 
-        logging.info('%s with id: %s commented %s on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], request.form['message'], post.id)
+        #logging.info('%s with id: %s commented %s on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], request.form['message'], post.id)
 
         return redirect(url_for('show_post', id=post.id))
 
@@ -230,7 +223,7 @@ def del_comment(id):
     Comment.delete(id)
     post = Post.find(request.form['post_id'])
 
-    logging.info('%s with id: %s deleted comment on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+    #logging.info('%s with id: %s deleted comment on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
 
 
     return redirect(url_for('show_post',id = post.id))
@@ -244,7 +237,7 @@ def edit_comment(id):
         Comment.save(request.form['message'], id)
     post = Post.find(request.form['post_id'])
 
-    logging.info('%s with id: %s edited comment on post %s with: %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id, request.form['message'])
+    #logging.info('%s with id: %s edited comment on post %s with: %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id, request.form['message'])
 
 
     return redirect(url_for('show_post',id = post.id))    
@@ -266,7 +259,7 @@ def edit_user_username():
             return redirect('/user_info')
         user.username = edit_username
         
-        logging.info('%s with id: %s changed his username to %s', User.find_by_id(session['USERNAME']), session['USERNAME'], edit_username)
+        #logging.info('%s with id: %s changed his username to %s', User.find_by_id(session['USERNAME']), session['USERNAME'], edit_username)
         
         User.save_username(user)
 
@@ -288,7 +281,7 @@ def edit_user_email():
         user.email = edit_email
         User.save_email(user)
         
-        logging.info('%s with id: %s changed his email to %s', User.find_by_id(session['USERNAME']), session['USERNAME'], edit_email)
+        #logging.info('%s with id: %s changed his email to %s', User.find_by_id(session['USERNAME']), session['USERNAME'], edit_email)
         
         return redirect('/user_info')
 
@@ -309,7 +302,7 @@ def edit_user_password():
         user.password = User.hash_password(request.form['password'])
         User.save_password(user)
         
-        logging.info('%s with id: %s changed his password', User.find_by_id(session['USERNAME']), session['USERNAME'])
+        #logging.info('%s with id: %s changed his password', User.find_by_id(session['USERNAME']), session['USERNAME'])
         
         return redirect('/user_info')
 
@@ -322,15 +315,15 @@ def register():
         email = request.form['email']
         if User.find_by_username(username):
             flash('This username is already registered!')
-            logging.info('Someone tried to register with already existing username: %s', username)
+            #logging.info('Someone tried to register with already existing username: %s', username)
             return render_template('register.html')
         elif not request.form['password'] == request.form['confirmpassword']:
             flash('Incorrect password confirmation!')
-            logging.info('Someone didnt confirm his password properly')
+            #logging.info('Someone didnt confirm his password properly')
             return render_template('register.html')
         elif User.find_by_email(email):
             flash('This email is already registered!')
-            logging.info('Someone tied to register with already existing email: %s', email)
+            #logging.info('Someone tied to register with already existing email: %s', email)
             return render_template('register.html')
         values = (
             None,
@@ -355,23 +348,23 @@ def login():
         user = User.find_by_username(username)
         if not user or not user.verify_password(password):
             flash('Incorrect login information!')
-            logging.info('Someone tried to login with wrong login information')
+            #logging.info('Someone tried to login with wrong login information')
             return render_template('login.html')
         elif not user.verify_password(confirmpassword) == user.verify_password(password):
             flash('Incorrect login information!')
-            logging.info('Someone tried to login with wrong login information')
+            #logging.info('Someone tried to login with wrong login information')
             return render_template('login.html')
         session['logged_in'] = True
         session['USERNAME'] = user.id
 
-        logging.info('%s with id: %s successfully logged in', User.find_by_id(session['USERNAME']), session['USERNAME'])
+        #logging.info('%s with id: %s successfully logged in', User.find_by_id(session['USERNAME']), session['USERNAME'])
 
         return redirect('/')
 
 @app.route('/log_out', methods=['GET','POST'])
 @require_login
 def log_out():
-    logging.info('%s with id: %s logged out', User.find_by_id(session['USERNAME']), session['USERNAME'])
+    #logging.info('%s with id: %s logged out', User.find_by_id(session['USERNAME']), session['USERNAME'])
     
     session['USERNAME'] = None
     session['logged_in'] = False
