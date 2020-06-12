@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>post</title>
+    <link rel="stylesheet" href="../static/css/post.css">
+    <title>Post</title>
 </head>
 <body onload="myFunction()"> 
     <a href="/">Home</a>
 
     <h1>{{ post.name }}</h1>
-    <h2>{{ post. model }}</h2>
 
     <hr>
 
@@ -18,8 +18,8 @@
     <p>Email : {{ email }}</p>
 
     {% for img in images %}
-        <div>
-            <img src="{{ post.file_path }}{{ img }}" width="400" height="200">
+        <div style="width: 20%;">
+            <img src="{{ post.file_path }}{{ img }}" style="width: 100%;">
         </div>
     {% endfor %}
 

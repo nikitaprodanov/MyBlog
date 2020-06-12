@@ -1,0 +1,35 @@
+h1 {
+    padding: 60px;
+    text-align: center;
+    background: #1abc9c;
+    color: white;
+    font-size: 30px;
+}
+
+.post {
+    box-sizing: border-box;
+    color: grey;
+    border: 1px solid #ddd;
+    background-color: #f6f6f6;
+    margin: 10px;
+    text-decoration: none;
+}
+
+.post:hover {
+    color: white;
+    background-color: #4CAF50;
+}
+
+.back {
+    box-sizing: border-box;
+    color: grey;
+    border: 1px solid #ddd;
+    background-color: #f6f6f6;
+    margin: 10px;
+    text-decoration: none;
+}
+
+.back:hover {
+    color: white;
+    background-color: #4CAF50;
+}

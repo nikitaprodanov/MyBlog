@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../static/css/article.css">
     <title>articles - {{ article.name }}</title>
 </head>
 <body>
     
-    <a href="/articles/{{ article.id }}/delete">Delete</a>
+    <a class="back" href="/articles/{{ article.id }}/delete">Delete</a>
     <br/>
-    <a href="/articles">Back</a>
+    <a class="back" href="/articles">Back</a>
     <br/>
     <h1>{{ article.name }}</h1>
     {% for post in article.posts() %}
-    <a href="/posts/{{ post.id }}"><b>Name:</b> {{ post.name }} | Author: {{ post.model }}</a>
+    <a class="post" href="/posts/{{ post.id }}"><b>Name:</b> {{ post.name }}</a>
     <br/>
     {% endfor %}
 </body>
