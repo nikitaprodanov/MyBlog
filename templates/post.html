@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../static/css/post.css">
+    <title>Post</title>
+</head>
+<body onload="myFunction()"> 
+    <a href="/">Home</a>
+
+    <h1>{{ post.name }}</h1>
+
+    <hr>
+
+    <p>Posted by : {{ username }}</p>
+    <p>Email : {{ email }}</p>
+
+    {% for img in images %}
+        <div style="width: 20%;">
+            <img src="{{ post.file_path }}{{ img }}" style="width: 100%;">
+        </div>
+    {% endfor %}
+
+    <p>{{ post.description }}</p>
+
+    {% if post.user_id == user_id %}
+        <a href="/posts/{{ post.id }}/edit">Edit post</a><br/><br/>
+        <form action="/posts/{{ post.id }}/delete" method="post">
+            <button type="submit">Delete post</button>
+        </form>
+    {% endif %}
+    <br/>
+    {% for message in get_flashed_messages() %}
+    <p>{{ message }}</p>
+    {% endfor %}
+    <form action="/comments/new" method="post">
+        <input type="text" name="message">
+        <input type="hidden" name="post_id" value="{{ post.id }}">
+        <button type="submit">Create comment</button>
+    </form>
+    <div id="comments">
+    {% for comment in post.comments() %}
+        <p> {{ comment.message }} Posted by: {{ comment.username }} </p>
+        {% if comment.user_id == user_id %}
+            <form action="/comments/{{ comment.id }}/delete" method="post">
+                <input type="hidden" name="post_id" value="{{ post.id }}">
+                <button type="submit">Delete comment</button>
+            </form>
+            <button onclick="myFunction()">Edit comment</button>
+            
+            <script>
+                function myFunction() {
+                var x = document.getElementById("myDIV");
+                if (x.style.display === "none") {
+                    x.style.display = "block";
+                } else {
+                    x.style.display = "none";
+                }
+                } 
+            </script>
+            
+            <div id="myDIV">
+                <form action="/comments/{{ comment.id }}/edit" method="post">
+                    <input type="text" name="message" value="{{ comment.message }}">
+                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                    <button type="submit">submit</button>
+                </form>
+            </div>
+            
+        {% endif %}
+        <br/>
+        <br/>
+    {% endfor %}
+    </div>
+</body>
+</html>

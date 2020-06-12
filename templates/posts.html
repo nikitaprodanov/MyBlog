@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../static/css/all_posts.css">
+    <title>Posts</title>
+</head>
+<body>
+    <div class="header">
+        <div class="user-profile">
+            <h1>Posts</h1>
+        </div>
+        <div class="topnav">
+            <a href="/posts/new">Add post</a>
+            <a href="/articles">Articles</a>
+            <a class="form-link" href="/register">Sign up</a>
+            <a class="form-link" href="/login">Sign in</a>
+            <div class="search-container">
+                <form action="/posts/search" method="POST">
+                    <input type="search" name="keyword" placeholder="Search...">
+                    <input type="submit" value="Search">
+                
+                </form>
+            </div>
+        </div> 
+    </div>
+
+    <div class="posts">
+        {% for post in posts %}
+            {% for key, value in images.items() %}
+                {% if key == post.file_path %}
+                <div class="post-image" style="width: 20%;">
+                    <a href="/posts/{{ post.id }}">
+                        <img src="{{ key }}{{ value }}" style="width: 100%;">
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                    <p><b>Name:</b> {{ post.name }}</p>
+                </div>
+            {% endfor %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../static/css/article.css">
+    <title>articles - {{ article.name }}</title>
+</head>
+<body>
+    
+    <a class="back" href="/articles/{{ article.id }}/delete">Delete</a>
+    <br/>
+    <a class="back" href="/articles">Back</a>
+    <br/>
+    <h1>{{ article.name }}</h1>
+    {% for post in article.posts() %}
+    <a class="post" href="/posts/{{ post.id }}"><b>Name:</b> {{ post.name }}</a>
+    <br/>
+    {% endfor %}
+</body>
+</html>

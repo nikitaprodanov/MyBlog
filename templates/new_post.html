@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="../static/css/new_post.css">
+  <title>New post</title>
+</head>
+<body>
+  <form action="/posts/new" method="post" enctype="multipart/form-data">
+      <label>Name</label>
+      <input name="name" type="text" required/>
+      </br>
+      <label>Description</label>
+      <textarea name="description" ></textarea>
+      <br>
+      <label>Article</label>
+      <select name="article_id" required>
+        {% for article in articles %}
+          <option value="{{ article.id }}">{{ article.name }}</option>
+        {% endfor %}
+      </select>
+      </br>
+      {% for message in get_flashed_messages() %}
+        <p>{{ message }}</p>
+      {% endfor %}
+      <input type="file" multiple="" name="file" class="span3" required/>
+      <br/>
+      <input type="submit" value="Post post"  class="span2">
+      </br>
+    </form>
+</body>
+</html>

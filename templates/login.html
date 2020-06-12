@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, intial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/new_post.css') }}">
+    </head>
+    <body>
+    	<form class="registration-form" action="/login" method="post">
+	    	<header class="registration-header">Login</header>
+            <div class="form-elements">
+                {% for message in get_flashed_messages() %}
+                  <p>{{ message }}</p>
+                {% endfor %}
+                <input class="username" type="text" name="username" placeholder="Enter your username" required><br>
+        	    	<input class="password" type="password" name="password" placeholder="Enter your password" required><br>
+                <input class="confirm" type="password" name="confirmpassword" placeholder="Confirm your password" required><br>
+                <p>Don't have an account ? Register from
+                  <a href="/register">here</a>
+                </p>
+            </div>
+            <div class ="sign-button">
+	    	      <button type="Submit" value="Sign">Sign in</button>
+            </div>
+    	</form>
+    </body>
+</html>

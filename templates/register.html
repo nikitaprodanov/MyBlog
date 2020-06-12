@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, intial-scale=1.0">
+        <link rel="stylesheet" href="../static/css/new_post.css">
+    </head>
+    <body>
+    	<form class="registration-form" action="/register" method="post">
+	    	<header class="registration-header">Registration</header>
+            <div class="form-elements">
+                {% for message in get_flashed_messages() %}
+                  <p>{{ message }}</p>
+                {% endfor %}
+                <input class="username" type="text" name="username" placeholder="Enter your username" required><br>
+        	    <input class="password" type="password" name="password" placeholder="Enter your password" required><br>
+                <input class="confirm" type="password" name="confirmpassword" placeholder="Confirm your password" required><br>
+                <input class="email" type="text" name="email" placeholder="Enter your e-mail" required><br>
+                <p>Already have an account ?
+                <a href="/login">Log in from here!</a>
+                </p>
+            </div>
+            <div class ="sign-button">
+	    	      <button type="Submit" value="Sign">Sign up</button>
+            </div>
+    	</form>
+    </body>
+</html>

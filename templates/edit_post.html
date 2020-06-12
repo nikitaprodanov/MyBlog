@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/new_post.css') }}">
+  <title>Edit post</title>
+</head>
+<body>
+  <form action="/posts/{{ post.id }}/edit" method="post" enctype="multipart/form-data">
+    <label>Name</label>
+    <input name="name" type="text" value="{{ post.name }}" required/>
+    </br>
+    <label>Description</label>
+    <textarea name="description">{{ post.description }}</textarea>
+    </br>
+    </br>
+    <label>Article</label>
+    <select name="article_id">
+      {% for article in articles %}
+        <option value="{{ article.id }}">{{ article.name }}</option>
+      {% endfor %}
+    </select>
+    </br>
+    {% for message in get_flashed_messages() %}
+      <p>{{ message }}</p>
+    {% endfor %}  
+    <input type="file" multiple="" name="file" class="span3" value={{ post.file_path }} required/><br />
+    <input type="submit" value="Save"  class="span2">
+    </br>
+  </form>
+</body>
+</html>
