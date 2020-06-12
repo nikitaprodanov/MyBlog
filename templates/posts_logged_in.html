@@ -4,20 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>posts</title>
+    <link rel="stylesheet" href="../static/css/all_posts.css">
+    <title>Posts</title>
 </head>
 <body>
     <div class="header">
         <div class="user-profile">
+            <h1>Posts</h1>
             {% if username %}
                 <p>Logged in as: <a href="/user_info">{{ username }}</a></p>
             {% endif %}
-            <h1>Vehicles</h1>
         </div>
         <div class="topnav">
             <a href="/posts/new">Add post</a>
             <a href="/posts/user_posts">My posts</a>
-            <a href="/articles">articles</a>
+            <a href="/articles">Articles</a>
             <div class="search-container">
                 <form action="/posts/search" method="POST">
                     <input type="search" name="keyword" placeholder="Search...">
@@ -32,13 +33,13 @@
         {% for post in posts %}
             {% for key, value in images.items() %}
                 {% if key == post.file_path %}
-                <div class="post-image">
+                <div class="post-image" style="width: 20%;">
                     <a href="/posts/{{ post.id }}">
-                        <img src="{{ key }}{{ value }}" width="400" height="200">
+                        <img src="{{ key }}{{ value }}" style="width: 100%;">
                     </a>
                     {% endif %}
                     {% endfor %}
-                    <a href="/posts/{{ post.id }}"><b>Name:</b> {{ post.name }}</a>
+                    <p><b>Name:</b> {{ post.name }}</p>
                 </div>
             {% endfor %}
     </div>
