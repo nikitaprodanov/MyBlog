@@ -1,8 +1,11 @@
+from functools import wraps
+
 from flask import Flask
 from flask import render_template, request, redirect, url_for, jsonify, send_from_directory, flash, session
-
-from functools import wraps
+from werkzeug import secure_filename
+import json
 import os, shutil, string, random
+import logging
 
 from database import DB
 from user import User
@@ -11,7 +14,11 @@ from post import Post
 from article import Article
 
 app = Flask(__name__)
-app.secret_key = "blog and posts"
+app.secret_key = "vehicle catalogue key"
+app.logger.disabled = True
+log = logging.getLogger('werkzeug')
+log.disabled = True
+logging.basicConfig(filename= 'InfoBlog.log', level= logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 def require_login(func):
     @wraps(func)
@@ -27,6 +34,14 @@ def main_page():
         return redirect('/posts_logged_in')
     return redirect('/posts')
 
+@app.route('/user_info')
+@require_login
+def user_info():
+    username = User.find_by_id(session['USERNAME'])
+    return render_template('user_info.html', user = User.find_by_username(username))
+
+
+#postS METHODS
 @app.route('/posts/user_posts')
 @require_login
 def user_posts():
@@ -45,11 +60,11 @@ def posts_logged_in():
     posts = Post.all()
     images = {}
     if posts:
-       for post in posts:
+        for post in posts:
             directory = os.listdir(post.file_path) 
             file_path = post.file_path
             images.update({file_path : directory[0]})
-    return render_template('posts_logged_in.html', username = User.find_by_id(session['USERNAME']), posts = posts, images = images)
+    return render_template('posts_logged_in.html', posts = posts, username = User.find_by_id(session['USERNAME']), images = images)
 
 @app.route('/posts/search', methods=['POST'])
 def search_post():
@@ -88,7 +103,7 @@ def show_post(id):
     username = User.find_by_id(post.user_id)
     user = User.find_by_username(username)
     email = user.email
-    return render_template('post.html', post = post)#, images = images, user_id = user_id, username = username, email = email)
+    return render_template('post.html', post = post, images = images, user_id = user_id, username = username, email = email)
 
 @app.route('/posts/new', methods=['GET', 'POST'])
 @require_login
@@ -115,7 +130,7 @@ def new_post():
         )
         Post(*values).create()
 
-        #logging.info('%s with id: %s added new post', User.find_by_id(session['USERNAME']), session['USERNAME'])
+        logging.info('%s with id: %s added new post', User.find_by_id(session['USERNAME']), session['USERNAME'])
 
         return redirect('/')
 
@@ -127,7 +142,7 @@ def delete_post(id):
     with DB() as db:
         db.execute('DELETE FROM comments WHERE post_id = ?', (post.id,))
     post.delete()
-    #logging.info('%s with id: %s deleted post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+    logging.info('%s with id: %s deleted post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
     return redirect('/')
 
 @app.route('/posts/<int:id>/edit', methods=['GET', 'POST'])
@@ -152,10 +167,12 @@ def edit_post(id):
         post.file_path = img_path
         post.save()
 
-        #logging.info('%s with id: %s edited post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+        logging.info('%s with id: %s edited post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
         
         return redirect(url_for('show_post', id = post.id))
 
+
+#articles METHODS
 @app.route('/articles')
 def get_articles():
     return render_template("articles.html", articles=Article.all())
@@ -168,7 +185,7 @@ def new_article():
         article = Article(None, request.form["name"])
         article.create()
 
-        #logging.info('%s with id: %s added new categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
+        logging.info('%s with id: %s added new categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
         
         return redirect("/articles")
 
@@ -182,73 +199,58 @@ def get_article(id):
 def delete_article(id):
     Article.find(id).delete()
 
-    #logging.info('%s with id: %s deleted categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
+    logging.info('%s with id: %s deleted categoty %s named %s', User.find_by_id(session['USERNAME']), session['USERNAME'], article.id, article.name)
 
 
     return redirect("/articles")
-  
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'GET':
-        return render_template('register.html')
-    elif request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        if User.find_by_username(username):
-            flash('This username is already registered!')
-            # logging.info('Someone tried to register with already existing username: %s', username)
-            return render_template('register.html')
-        elif not request.form['password'] == request.form['confirmpassword']:
-            flash('Incorrect password confirmation!')
-            # logging.info('Someone didnt confirm his password properly')
-            return render_template('register.html')
-        elif User.find_by_email(email):
-            flash('This email is already registered!')
-            # logging.info('Someone tied to register with already existing email: %s', email)
-            return render_template('register.html')
-        values = (
-            None,
-            username,
-            User.hash_password(request.form['password']),
-            email
-        )
-        User(*values).create()
-        user = User.find_by_username(username)
-        session['logged_in'] = True
-        session['USERNAME'] = user.id
-        return redirect('/')  
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'GET':
-        return render_template('login.html')
-    elif request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        confirmpassword = request.form['confirmpassword']
-        user = User.find_by_username(username)
-        if not user or not user.verify_password(password):
-            flash('Incorrect login information!')
-            # logging.info('Someone tried to login with wrong login information')
-            return render_template('login.html')
-        elif not user.verify_password(confirmpassword) == user.verify_password(password):
-            flash('Incorrect login information!')
-            # logging.info('Someone tried to login with wrong login information')
-            return render_template('login.html')
-        session['logged_in'] = True
-        session['USERNAME'] = user.id
-
-        # logging.info('%s with id: %s successfully logged in', User.find_by_id(session['USERNAME']), session['USERNAME'])
-
-        return redirect('/')
-
-@app.route('/user_info')
+#COMMENTS METHODS
+@app.route('/comments/new', methods=['GET', 'POST'])
 @require_login
-def user_info():
-    username = User.find_by_id(session['USERNAME'])
-    return render_template('user_info.html', user = User.find_by_username(username))
+def new_comment():
+    if request.method == 'POST':
+        post = Post.find(request.form['post_id'])
+        user_id = session['USERNAME']
+        username = User.find_by_id(user_id)
+        if not request.form['message']:
+            flash('You entered empty comment!')
+            return redirect(url_for('show_post', id=post.id))
+        else:
+            values = (None, post, request.form['message'], user_id, username)
+            Comment(*values).create()
 
+        logging.info('%s with id: %s commented %s on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], request.form['message'], post.id)
+
+        return redirect(url_for('show_post', id=post.id))
+
+@app.route('/comments/<int:id>/delete', methods=['POST'])
+@require_login
+def del_comment(id):
+    Comment.delete(id)
+    post = Post.find(request.form['post_id'])
+
+    logging.info('%s with id: %s deleted comment on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
+
+
+    return redirect(url_for('show_post',id = post.id))
+
+@app.route('/comments/<int:id>/edit', methods=['POST'])
+@require_login
+def edit_comment(id):
+    if not request.form['message']:
+        Comment.delete(id)
+    else:
+        Comment.save(request.form['message'], id)
+    post = Post.find(request.form['post_id'])
+
+    logging.info('%s with id: %s edited comment on post %s with: %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id, request.form['message'])
+
+
+    return redirect(url_for('show_post',id = post.id))    
+
+
+#REGISTRATION/LOGIN METHODS
 @app.route('/edit_user_username', methods=['POST'])
 def edit_user_username():
     if request.method == 'POST':
@@ -264,7 +266,7 @@ def edit_user_username():
             return redirect('/user_info')
         user.username = edit_username
         
-        # logging.info('%s with id: %s changed his username to %s', User.find_by_id(session['USERNAME']), session['USERNAME'], edit_username)
+        logging.info('%s with id: %s changed his username to %s', User.find_by_id(session['USERNAME']), session['USERNAME'], edit_username)
         
         User.save_username(user)
 
@@ -286,7 +288,7 @@ def edit_user_email():
         user.email = edit_email
         User.save_email(user)
         
-        # logging.info('%s with id: %s changed his email to %s', User.find_by_id(session['USERNAME']), session['USERNAME'], edit_email)
+        logging.info('%s with id: %s changed his email to %s', User.find_by_id(session['USERNAME']), session['USERNAME'], edit_email)
         
         return redirect('/user_info')
 
@@ -307,58 +309,74 @@ def edit_user_password():
         user.password = User.hash_password(request.form['password'])
         User.save_password(user)
         
-        # logging.info('%s with id: %s changed his password', User.find_by_id(session['USERNAME']), session['USERNAME'])
+        logging.info('%s with id: %s changed his password', User.find_by_id(session['USERNAME']), session['USERNAME'])
         
         return redirect('/user_info')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+    elif request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        if User.find_by_username(username):
+            flash('This username is already registered!')
+            logging.info('Someone tried to register with already existing username: %s', username)
+            return render_template('register.html')
+        elif not request.form['password'] == request.form['confirmpassword']:
+            flash('Incorrect password confirmation!')
+            logging.info('Someone didnt confirm his password properly')
+            return render_template('register.html')
+        elif User.find_by_email(email):
+            flash('This email is already registered!')
+            logging.info('Someone tied to register with already existing email: %s', email)
+            return render_template('register.html')
+        values = (
+            None,
+            username,
+            User.hash_password(request.form['password']),
+            email
+        )
+        User(*values).create()
+        user = User.find_by_username(username)
+        session['logged_in'] = True
+        session['USERNAME'] = user.id
+        return redirect('/')        
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    elif request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        confirmpassword = request.form['confirmpassword']
+        user = User.find_by_username(username)
+        if not user or not user.verify_password(password):
+            flash('Incorrect login information!')
+            logging.info('Someone tried to login with wrong login information')
+            return render_template('login.html')
+        elif not user.verify_password(confirmpassword) == user.verify_password(password):
+            flash('Incorrect login information!')
+            logging.info('Someone tried to login with wrong login information')
+            return render_template('login.html')
+        session['logged_in'] = True
+        session['USERNAME'] = user.id
+
+        logging.info('%s with id: %s successfully logged in', User.find_by_id(session['USERNAME']), session['USERNAME'])
+
+        return redirect('/')
 
 @app.route('/log_out', methods=['GET','POST'])
 @require_login
 def log_out():
-    # logging.info('%s with id: %s logged out', User.find_by_id(session['USERNAME']), session['USERNAME'])
+    logging.info('%s with id: %s logged out', User.find_by_id(session['USERNAME']), session['USERNAME'])
     
     session['USERNAME'] = None
     session['logged_in'] = False
 
     return redirect('/')
-
-
-@app.route('/comments/new', methods=['GET', 'POST'])
-@require_login
-def new_comment():
-    if request.method == 'POST':
-        post = Post.find(request.form['post_id'])
-        user_id = session['USERNAME']
-        username = User.find_by_id(user_id)
-        if not request.form['message']:
-            flash('You entered empty comment!')
-            return redirect(url_for('show_post', id=post.id))
-        else:
-            values = (None, post, request.form['message'], user_id, username)
-            Comment(*values).create()
-        #logging.info('%s with id: %s commented %s on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], request.form['message'], post.id)
-        return redirect(url_for('show_post', id=post.id))
-
-
-@app.route('/comments/<int:id>/delete', methods=['POST'])
-@require_login
-def del_comment(id):
-    Comment.delete(id)
-    post = Post.find(request.form['post_id'])
-    #logging.info('%s with id: %s deleted comment on post %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id)
-    return redirect(url_for('show_post',id = post.id))
-
-
-@app.route('/comments/<int:id>/edit', methods=['POST'])
-@require_login
-def edit_comment(id):
-    if not request.form['message']:
-        Comment.delete(id)
-    else:
-        Comment.save(request.form['message'], id)
-    post = Post.find(request.form['post_id'])
-    logging.info('%s with id: %s edited comment on post %s with: %s', User.find_by_id(session['USERNAME']), session['USERNAME'], post.id, request.form['message'])
-    return redirect(url_for('show_post',id = post.id))
-
 
 if __name__ == '__main__':
     app.run(debug=True)

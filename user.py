@@ -1,7 +1,7 @@
-
 import hashlib
 
 from database import DB
+from post import Post
 
 class User:
     def __init__(self, id, username, password, email):

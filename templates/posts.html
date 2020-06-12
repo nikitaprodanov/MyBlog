@@ -9,11 +9,11 @@
 <body>
     <div class="header">
         <div class="user-profile">
-            <h1>Posts</h1>
+            <h1>Vehilces</h1>
         </div>
         <div class="topnav">
             <a href="/posts/new">Add post</a>
-            <a href="/articles">Articles</a>
+            <a href="/articles">articles</a>
             <a style="color: blue;" href="/register">Sign up</a>
             <a style="color: blue;" href="/login">Sign in</a>
             <div class="search-container">
@@ -26,7 +26,19 @@
         </div> 
     </div>
 
-    <!-- TODO ADD POSTS -->
-
+    <div class="posts">
+        {% for post in posts %}
+            {% for key, value in images.items() %}
+                {% if key == post.file_path %}
+                <div class="post-image">
+                    <a href="/posts/{{ post.id }}">
+                        <img src="{{ key }}{{ value }}" width="400" height="200">
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                    <a href="/posts/{{ post.id }}"><b>Name:</b> {{ post.name }}</a>
+                </div>
+            {% endfor %}
+    </div>
 </body>
 </html>
