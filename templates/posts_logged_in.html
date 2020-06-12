@@ -12,7 +12,7 @@
             {% if username %}
                 <p>Logged in as: <a href="/user_info">{{ username }}</a></p>
             {% endif %}
-            <h1>Posts</h1>
+            <h1>Vehicles</h1>
         </div>
         <div class="topnav">
             <a href="/posts/new">Add post</a>
@@ -28,7 +28,20 @@
         </div> 
     </div>
 
-    <!-- TODO ADD POSTS -->
+    <div class="posts">
+        {% for post in posts %}
+            {% for key, value in images.items() %}
+                {% if key == post.file_path %}
+                <div class="post-image">
+                    <a href="/posts/{{ post.id }}">
+                        <img src="{{ key }}{{ value }}" width="400" height="200">
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                    <a href="/posts/{{ post.id }}"><b>Name:</b> {{ post.name }}</a>
+                </div>
+            {% endfor %}
+    </div>
 
 </body>
 </html>
