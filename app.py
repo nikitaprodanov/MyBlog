@@ -65,7 +65,7 @@ def search_post():
         keyword = request.form['keyword']
         with DB() as db:
             rows = db.execute('''SELECT * FROM posts WHERE 
-            (name LIKE ? OR name LIKE ?) ''', ("%" + keyword + "%", "%" + keyword + "%",)).fetchall()
+            (name LIKE ? escape '!') ''', ("%" + keyword + "%",)).fetchall()
             posts = [Post(*row) for row in rows]
             images = {}
             for post in posts:
